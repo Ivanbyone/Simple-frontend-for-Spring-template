@@ -1,45 +1,48 @@
 import React, { useState } from "react";
 
 function App() {
-  const [formData, setFormData] = useState({
-    category: "",
-    surname: "",
-    name: "",
-    age: "",
-    city: "",
-    email: "",
-    phoneNumber: "",
-    salary: "",
-    githubUrl: "",
-  });
+  const [formData, setFormData] = useState(
+    new Map([
+      ["category", ""],
+      ["surname", ""],
+      ["name", ""],
+      ["age", ""],
+      ["city", ""],
+      ["email", ""],
+      ["phoneNumber", ""],
+      ["salary", ""],
+      ["gitHubUrl", ""],
+    ])
+  );
 
   const [responseMessage, setResponseMessage] = useState("");
   const [responseData, setResponseData] = useState(null); 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData(
+      new Map(formData.set(name, value))
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const newFormData = JSON.stringify(Object.fromEntries(formData));
+    console.log(newFormData);
 
     try {
-      const response = await fetch("http://localhost:8080/api/v1/feedback=form/create", {
+      const response = await fetch("http://localhost:8080/api/v1/feedback-form/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: newFormData,
       });
 
       if (response.ok) {
         const result = await response.json();
-        setResponseMessage(result.message || "Form submitted successfully!");
-        setResponseData(result.data || null);
+        setResponseMessage(result.message || "Форма успешно сохранена!");
+        setResponseData(result.formUrl || null);
       } else {
         const error = await response.json();
         setResponseMessage(error.message || "Failed to submit form. Try again.");
@@ -157,7 +160,7 @@ function App() {
             Ссылка на GitHub:
             <input
               type="text"
-              name="message"
+              name="gitHubUrl"
               value={formData.githubUrl}
               onChange={handleChange}
               required
@@ -169,8 +172,8 @@ function App() {
       {responseMessage && <p style={{ marginTop: "20px" }}>{responseMessage}</p>}
       {responseData && (
         <div style={{ marginTop: "20px", border: "1px solid #ccc", padding: "10px" }}>
-          <h4>Response Data:</h4>
-          <pre>{JSON.stringify(responseData, null, 2)}</pre>
+          <h4>Ссылка для отслеживания:</h4>
+          <a href={JSON.stringify(responseData, null, 2)} target="_blank" rel="noopener noreferrer">Ссылка</a>
         </div>
       )}
     </div>
